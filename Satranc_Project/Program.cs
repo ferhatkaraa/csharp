@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections;
 using System.ComponentModel.Design;
@@ -26,7 +26,7 @@ namespace Ferhat_Kara_Proje_231041008
 
             void süsle()
             {
-                for (int i = 0; i < 30; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     Console.Write("♟");
                 }
@@ -49,7 +49,6 @@ namespace Ferhat_Kara_Proje_231041008
                 oyuncu2 = "Oyuncu2";
             }
             süsle();
-            süsle();
             // 1 oyuna girer 2 oyundan çıkar 
             //oyun bitince döngü buraya dmber 
             while (menu == "-1") {
@@ -69,11 +68,11 @@ namespace Ferhat_Kara_Proje_231041008
                 //OYUN
                 if (menu == "1") {
                     while (menu != "-1") {
-                        süsle();
                         //oyun Tahta.cs dosyasındaki fonksiyonlar ile oynanır 
                         //maketable puan1 değişkenine analiz edilecek sayiyi döner
                         // static constrauctor method olduğu için önce o çalışır sonra maketable çalışır
                         puan1 = Tahta.maketable(oyuncu1, oyuncu2, puan1, puan2);
+                        süsle();
                         if (puan1 > 0)
                         {
                             Console.WriteLine($"{oyuncu1} kazandı.");
@@ -90,7 +89,7 @@ namespace Ferhat_Kara_Proje_231041008
                         Console.WriteLine($"OYUN BİTTİ\n{oyuncu1}:{puan1}-{puan2}:{oyuncu2}");
                         Console.WriteLine("Tekrar oynamak ister misin?");
                         menu = "-1";
-                        
+                        süsle();
                     }//while menu
                 }//if menu
            }//while menu
