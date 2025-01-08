@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,10 +29,36 @@ namespace Ferhat_Kara_Proje_231041008
         //ikinci ve üçüncü maçlar başladığında taşların yeniden dizilmesi için bu listeler lazım
         public static List<Tas> Alls = new List<Tas>();
         public static Dictionary<Tas, int[]> AllLocate = new Dictionary<Tas, int[]>();
-
+        public bool check = false;
         public int[] konum;
         protected internal string sembol;
-        protected internal string renk;
+        protected internal bool hareket_etti = false;
+        protected internal string __renk;
+        public string renk
+        {
+            get
+            {
+                return __renk;
+            }
+            set
+            {
+                if (!new List<string>() { "beyaz", "siyah" }.Contains(value))
+                {
+                    if ((konum[0] == 0 || konum[0] == 1) && !hareket_etti)
+                    {
+                        __renk = "beyaz";
+                    }
+                    else if ((konum[0] == 6 || konum[0] == 7) && !hareket_etti)
+                    {
+                        __renk = "siyah";
+                    }
+                }
+                else
+                {
+                    __renk = value;
+                }
+            }
+        }
         protected internal Tas(int[] _konum,string _sembol,string _renk)
         {
             this.konum = _konum;
@@ -59,8 +85,9 @@ namespace Ferhat_Kara_Proje_231041008
         internal void hamle_kontrol(string hml,string konum_yardım,ref bool found,ref bool mate,ref bool pat,ref int p1,ref int p2, dynamic[,] sonkonumlar)
         {
             bool xbool = hml.Contains("x");
-            
+            Console.WriteLine(xbool);
             bool artibool = hml.Contains("+");
+            Console.WriteLine(artibool);
             int[] nereye;
             int[] eskikonum = new int[2];
             dynamic yedek;
@@ -112,8 +139,6 @@ namespace Ferhat_Kara_Proje_231041008
                         }else
                         {
                         Console.WriteLine("konum değiştirildi");
-                        this.konum[0] = nereye[0];
-                        this.konum[1] = nereye[1];
                         
                             found = true;
                             if (yedek.GetType() != typeof(string))
@@ -130,7 +155,11 @@ namespace Ferhat_Kara_Proje_231041008
                                     Console.WriteLine("mat kontrol");
                                     mate = s.Matkontrol();
                                 }
-                                else Console.WriteLine("pat kontrol"); pat = s.Patkontrol();
+                                else
+                                {
+                                    Console.WriteLine("pat kontrol"); 
+                                    pat = s.Patkontrol();
+                                }
                             }
                         }
                     }
@@ -154,13 +183,17 @@ namespace Ferhat_Kara_Proje_231041008
 
     internal class Sah : Tas,IKontrol
     {
-
+       // override sahkontrol method
         public bool Sahkontrol(string _renk,string _sembol)
         {
             foreach (Tas item in Alls)
             {
                 if (this.renk != item.renk)
                 {
+                    if (item.check)
+                    {
+                        return true;
+                    }
                     foreach (int[] i in item.gidilecekkareler())
                     {
                         if (i[0] == this.konum[0] && i[1] == this.konum[1])
@@ -172,23 +205,33 @@ namespace Ferhat_Kara_Proje_231041008
             }
             return false;
         }
-        
+        //overload Sahkontrol method
         public bool Sahkontrol(int[] __konum)
         {
+            this.check = false;
+            int[] eskikonum = new int[] { this.konum[0], this.konum[1] };
+            dynamic sakla = " ";
             foreach (Tas item in Alls)
             {
                 if (this.renk != item.renk)
                 {
-                    foreach (int[] i in item.gidilecekkareler())
+                    if (item.konum == __konum)
                     {
-                        if (i[0] == __konum[0] && i[1] == __konum[1])
-                        {
-                            return true;
-                        }
+                        sakla = item;
+                        AllLocate.Remove(item);
+                        this.konum = __konum;
+                        break;
                     }
+                    
                 }
             }
-            return false;
+            this.check = Sahkontrol(this.renk,"S");
+            if (sakla != " ")
+            {
+                Alls.Add(sakla);
+            }
+            this.konum = eskikonum;
+            return this.check;
         }
 
 
@@ -281,6 +324,7 @@ namespace Ferhat_Kara_Proje_231041008
     {
         protected internal Vezir(int[] _konum, string _sembol, string _renk) : base(_konum, _sembol, _renk) { }
 
+        //overload gidilecek kareler
         public List<int[]> gidilecekkareler(bool kale)
         {
             if (kale)
@@ -302,6 +346,7 @@ namespace Ferhat_Kara_Proje_231041008
                             sor = true;
                             if (t.renk != this.renk)
                             {
+                                
                                 yeni_hareketler.Add(new int[] { kare[0] + sayx, kare[1] + sayy });
                                 break;
                             }
@@ -352,11 +397,11 @@ namespace Ferhat_Kara_Proje_231041008
 
             else return new List<int[]>();
         }
-
+        //override gidilecek kareler
         public override List<int[]> gidilecekkareler()
         {
             List<int[]> hareketler = new List<int[]>();
-
+            this.check = false;
             int artisx = 1;
             int artisy = 1;
             void kareekle(int[] kare, int sayx, int sayy, bool sor = false)
@@ -372,6 +417,11 @@ namespace Ferhat_Kara_Proje_231041008
                             sor = true;
                             if (t.renk != this.renk)
                             {
+                                if (t.sembol == "s")
+                                {
+                                    this.check = true;
+                                }
+
                                 hareketler.Add(new int[] { kare[0] + sayx, kare[1] + sayy });
                                 break;
                             }
@@ -425,7 +475,7 @@ namespace Ferhat_Kara_Proje_231041008
         public override List<int[]> gidilecekkareler()
         {
             List<int[]> hareketler = new List<int[]>();
-
+            this.check = false;
             int artisx = 1;
             int artisy = 0;
             void kareekle(int[] kare, int sayx, int sayy, bool sor = false)
@@ -441,6 +491,11 @@ namespace Ferhat_Kara_Proje_231041008
                             sor = true;
                             if (t.renk != this.renk)
                             {
+                                if (t.sembol == "s")
+                                {
+                                    this.check = true;
+                                }
+
                                 hareketler.Add(new int[] { kare[0] + sayx, kare[1] + sayy });
                                 break;
                             }
@@ -495,7 +550,7 @@ namespace Ferhat_Kara_Proje_231041008
         public override List<int[]> gidilecekkareler()
         {
             List<int[]> hareketler = new List<int[]>();
-
+            this.check = false;
             int artisx = 1;
             int artisy = 1;
             void  kareekle(int[] kare,int sayx,int sayy, bool sor = false)
@@ -511,6 +566,11 @@ namespace Ferhat_Kara_Proje_231041008
                             sor = true;
                             if (t.renk != this.renk)
                             {
+                                if (t.sembol == "s")
+                                {
+                                    this.check = true;
+                                }
+
                                 hareketler.Add(new int[] { kare[0] + sayx, kare[1] + sayy });
                                 break;
                             }
@@ -573,6 +633,7 @@ namespace Ferhat_Kara_Proje_231041008
                 new int[] {this.konum[0]+1,this.konum[1]-2 },
                 new int[] {this.konum[0]-1,this.konum[1]-2 },
             };
+            this.check = false;
             List<int[]> gecici = new List<int[]>(hareketler);
             foreach (var item in gecici)
             {
@@ -590,6 +651,14 @@ namespace Ferhat_Kara_Proje_231041008
                     {
                         hareketler.Remove(t.konum);
                     }
+                    else
+                    {
+                        if (t.sembol == "s")
+                        {
+                            this.check = true;
+                        }
+
+                    }
                 }
 
 
@@ -601,11 +670,12 @@ namespace Ferhat_Kara_Proje_231041008
     }
     internal class Piyon : Tas
     {
-        bool hareket_etti = false;
+        
         protected internal Piyon(int[] _konum, string _sembol, string _renk) : base(_konum, _sembol, _renk) { }
         
         public override List<int[]> gidilecekkareler() 
         {
+            this.check = false;
             int artis = 1;
             if (this.renk == "siyah") artis = -1;
             List<int[]> hareketler = new List<int[]>()
@@ -646,6 +716,14 @@ namespace Ferhat_Kara_Proje_231041008
                         if (t.renk == this.renk)
                         {
                             hareketler.Remove(t.konum);
+                        }
+                        else
+                        {
+                            if (t.sembol == "s")
+                            {
+                                this.check = true;
+                            }
+
                         }
                     }
                     
